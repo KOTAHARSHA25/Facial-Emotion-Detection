@@ -1,10 +1,11 @@
 import numpy as np
 import cv2
+import av
 import streamlit as st
 from tensorflow import keras
 from keras.models import model_from_json
 from tensorflow.keras.preprocessing.image import img_to_array
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration, VideoProcessorBase, WebRtcMode
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration, WebRtcMode
 
 st.set_page_config(page_title="EmoSense AI - Facial Emotion Detection", page_icon="🎭", layout="wide")
 
@@ -70,31 +71,30 @@ RTC_CONFIGURATION = RTCConfiguration({
     "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
 })
 
-class Faceemotion(VideoTransformerBase):
-    def transform(self, frame):
-        img = frame.to_ndarray(format="bgr24")
+def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
+    img = frame.to_ndarray(format="bgr24")
 
-        #image gray
-        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(
-            image=img_gray, scaleFactor=1.3, minNeighbors=5)
-        for (x, y, w, h) in faces:
-            cv2.rectangle(img=img, pt1=(x, y), pt2=(
-                x + w, y + h), color=(255, 0, 0), thickness=2)
-            roi_gray = img_gray[y:y + h, x:x + w]
-            roi_gray = cv2.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
-            if np.sum([roi_gray]) != 0:
-                roi = roi_gray.astype('float') / 255.0
-                roi = img_to_array(roi)
-                roi = np.expand_dims(roi, axis=0)
-                prediction = classifier.predict(roi)[0]
-                maxindex = int(np.argmax(prediction))
-                finalout = emotion_dict[maxindex]
-                output = str(finalout)
-            label_position = (x, y)
+    #image gray
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(
+        image=img_gray, scaleFactor=1.3, minNeighbors=5)
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img=img, pt1=(x, y), pt2=(
+            x + w, y + h), color=(255, 0, 0), thickness=2)
+        roi_gray = img_gray[y:y + h, x:x + w]
+        roi_gray = cv2.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
+        if np.sum([roi_gray]) != 0:
+            roi = roi_gray.astype('float') / 255.0
+            roi = img_to_array(roi)
+            roi = np.expand_dims(roi, axis=0)
+            prediction = classifier.predict(roi, verbose=0)[0]
+            maxindex = int(np.argmax(prediction))
+            finalout = emotion_dict[maxindex]
+            output = str(finalout)
+            label_position = (x, y - 10)
             cv2.putText(img, output, label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-        return img
+    return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 def main():
     st.markdown('<h1 class="custom-title">🎭 EmoSense AI Explorer</h1>', unsafe_allow_html=True)
@@ -144,9 +144,15 @@ def main():
             key="emotion-detection", 
             mode=WebRtcMode.SENDRECV,
             rtc_configuration=RTC_CONFIGURATION,
-            video_processor_factory=Faceemotion,
+            video_frame_callback=video_frame_callback,
             media_stream_constraints={"video": True, "audio": False},
-            async_processing=True,
+            async_processing=True
+        )
+
+    elif choice == "ℹ️ About the Project":
+        st.markdown("""
+            <div style="text-align: center; padding: 2rem;">
+                <h2 style="color:#60a5fa;">The Science Behind the Screen</h2>
                 <br>
                 <p style="font-size: 1.2rem; max-width: 800px; margin: auto; line-height: 1.8;">
                 This intelligent application leverages a deep Convolutional Neural Network trained on thousands of facial expression images. 
