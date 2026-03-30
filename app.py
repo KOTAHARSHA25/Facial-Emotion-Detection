@@ -188,30 +188,34 @@ EMOTION_DICT = {
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ─────────────────────────────────────────────
-#  RTC CONFIG  — STUN + free public TURN
-#  Using Metered.ca free TURN (no signup needed
-#  for the open relay endpoints below).
-#  If these stop working: get a free account at
-#  https://dashboard.metered.ca
+#  RTC CONFIG  — STUN servers only
+#  Using multiple robust Google STUN relays.
+#  (Public TURN removed to prevent rate-limit 
+#  timeout crashes on Streamlit Cloud)
 # ─────────────────────────────────────────────
 RTC_CONFIGURATION = RTCConfiguration({
     "iceServers": [
-        # Google STUN
         {"urls": ["stun:stun.l.google.com:19302"]},
         {"urls": ["stun:stun1.l.google.com:19302"]},
-        # Open Relay TURN (public, no auth needed)
-        {
-            "urls": [
-                "turn:openrelay.metered.ca:80",
-                "turn:openrelay.metered.ca:443",
-                "turn:openrelay.metered.ca:443?transport=tcp",
-            ],
-            "username": "openrelayproject",
-            "credential": "openrelayproject",
-        },
-    ],
-    "iceTransportPolicy": "all",
+        {"urls": ["stun:stun2.l.google.com:19302"]},
+    ]
 })
+
+# --- WORKAROUND FOR STREAMLIT-WEBRTC THREADING BUG ---
+# Resolves: "AttributeError: 'NoneType' object has no attribute 'is_alive'"
+import streamlit_webrtc.shutdown
+if not hasattr(streamlit_webrtc.shutdown.SessionShutdownObserver, "_patched"):
+    _original_stop = streamlit_webrtc.shutdown.SessionShutdownObserver.stop
+    def _patched_stop(self):
+        if hasattr(self, "_polling_thread") and self._polling_thread is None:
+            # Bypass the NoneType thread access bug during WebRTC teardown
+            if hasattr(self, "_polling_thread_stopped") and self._polling_thread_stopped:
+                self._polling_thread_stopped.set()
+            return
+        _original_stop(self)
+    streamlit_webrtc.shutdown.SessionShutdownObserver.stop = _patched_stop
+    streamlit_webrtc.shutdown.SessionShutdownObserver._patched = True
+# -----------------------------------------------------
 
 # ─────────────────────────────────────────────
 #  MODEL LOADING  (cached across reruns)
