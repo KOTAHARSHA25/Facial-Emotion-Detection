@@ -12,22 +12,29 @@ st.set_page_config(page_title="EmoSense AI - Facial Emotion Detection", page_ico
 # Custom CSS for extraordinary look
 st.markdown("""
 <style>
-    .main {
+    [data-testid="stAppViewContainer"] {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color: white;
+        color: white !important;
     }
-    div[data-testid="stSidebar"] {
+    [data-testid="stSidebar"] {
         background-color: rgba(15, 25, 40, 0.95);
+        color: white !important;
         border-right: 2px solid #3b82f6;
+    }
+    [data-testid="stSidebar"] * {
+        color: white !important;
     }
     .stApp > header {
         background-color: transparent !important;
+    }
+    h1, h2, h3, p, li, span, label {
+        color: #ffffff !important;
     }
     .custom-title {
         font-family: 'Helvetica Neue', sans-serif;
         font-size: 3.5rem;
         font-weight: 800;
-        background: -webkit-linear-gradient(#4b6cb7, #182848);
+        background: -webkit-linear-gradient(#60a5fa, #93c5fd);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
@@ -35,17 +42,14 @@ st.markdown("""
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
     .card {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.4);
         backdrop-filter: blur(10px);
         border-radius: 15px;
         padding: 2.5rem;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         border: 1px solid rgba(255, 255, 255, 0.18);
         margin: 1rem 0;
-        color: white;
-    }
-    h1, h2, h3, p, label {
-        color: #f1f5f9;
+        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -70,7 +74,13 @@ def load_models():
 classifier, face_cascade = load_models()
 
 RTC_CONFIGURATION = RTCConfiguration({
-    "iceServers": [{"urls": ["stun:stun.l.google.com:19302", "turn:global.turn.twilio.com:3478?transport=udp", "turn:global.turn.twilio.com:3478?transport=tcp", "turn:global.turn.twilio.com:443?transport=tcp"]}]
+    "iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun1.l.google.com:19302"]},
+        {"urls": ["stun:stun2.l.google.com:19302"]},
+        {"urls": ["stun:stun3.l.google.com:19302"]},
+        {"urls": ["stun:stun4.l.google.com:19302"]}
+    ]
 })
 
 def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
