@@ -161,13 +161,7 @@ def main():
             rtc_configuration=RTC_CONFIGURATION,
             video_frame_callback=video_frame_callback,
             media_stream_constraints={"video": True, "audio": False},
-            async_processing=True
-        )
-
-    elif choice == "ℹ️ About the Project":
-        st.markdown("""
-            <div style="text-align: center; padding: 2rem;">
-                <h2 style="color:#60a5fa;">The Science Behind the Screen</h2>
+            async_processing=False
                 <br>
                 <p style="font-size: 1.2rem; max-width: 800px; margin: auto; line-height: 1.8;">
                 This intelligent application leverages a deep Convolutional Neural Network trained on thousands of facial expression images. 
