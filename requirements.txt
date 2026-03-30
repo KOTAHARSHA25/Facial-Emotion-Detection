@@ -1,6 +1,7 @@
-streamlit>=1.20.0
-numpy
-opencv-python-headless
-tensorflow-cpu
-keras
-streamlit-webrtc
+streamlit==1.25.0
+numpy<2.0.0
+opencv-python-headless==4.8.0.76
+tensorflow-cpu==2.13.0
+keras==2.13.1
+streamlit-webrtc==0.45.0
+protobuf<3.20.x
