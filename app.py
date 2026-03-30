@@ -66,7 +66,9 @@ try:
 except Exception:
     st.error("Error loading cascade classifiers")
 
-RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+RTC_CONFIGURATION = RTCConfiguration({
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+})
 
 class Faceemotion(VideoTransformerBase):
     def transform(self, frame):
@@ -140,17 +142,11 @@ def main():
         
         webrtc_streamer(
             key="emotion-detection", 
-            mode=WebRtcMode.SENDRECV, 
+            mode=WebRtcMode.SENDRECV,
             rtc_configuration=RTC_CONFIGURATION,
             video_processor_factory=Faceemotion,
             media_stream_constraints={"video": True, "audio": False},
-            async_processing=True
-        )
-
-    elif choice == "ℹ️ About the Project":
-        st.markdown("""
-            <div class="card" style="text-align: center;">
-                <h2 style="color:#3b82f6;">Behind the Magic ✨</h2>
+            async_processing=True,
                 <br>
                 <p style="font-size: 1.2rem; max-width: 800px; margin: auto; line-height: 1.8;">
                 This intelligent application leverages a deep Convolutional Neural Network trained on thousands of facial expression images. 
