@@ -161,7 +161,7 @@ def main():
                     <span style="background: #fbbc04; color: black; padding: 5px 15px; border-radius: 20px;">Streamlit</span>
                 </div>
                 <br><br>
-                <p>Developed with ❤️ by <b>Team Backbench Warriors</b>.</p>
+                <p>Developed with passion by <b>Team Backbench Warriors</b>.</p>
             </div>
         """, unsafe_allow_html=True)
 
