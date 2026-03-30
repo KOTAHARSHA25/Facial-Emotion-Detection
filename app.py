@@ -70,7 +70,7 @@ def load_models():
 classifier, face_cascade = load_models()
 
 RTC_CONFIGURATION = RTCConfiguration({
-    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302", "turn:global.turn.twilio.com:3478?transport=udp", "turn:global.turn.twilio.com:3478?transport=tcp", "turn:global.turn.twilio.com:443?transport=tcp"]}]
 })
 
 def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
