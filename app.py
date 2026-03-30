@@ -8,6 +8,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from streamlit_webrtc import webrtc_streamer, RTCConfiguration, WebRtcMode
 import os
 import threading
+from twilio.rest import Client
 
 # ─────────────────────────────────────────────
 #  PAGE CONFIG
@@ -188,17 +189,25 @@ EMOTION_DICT = {
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ─────────────────────────────────────────────
-#  RTC CONFIG  — STUN servers only
-#  Using multiple robust Google STUN relays.
-#  (Public TURN removed to prevent rate-limit 
-#  timeout crashes on Streamlit Cloud)
+#  RTC CONFIG  — Streamlit Cloud + TURN
+#  Streamlit Cloud blocks WebRTC UDP traffic. 
+#  We MUST use a TURN server to relay video over TCP.
+#  This function fetches ephemeral credentials from Twilio.
 # ─────────────────────────────────────────────
+@st.cache_data
+def get_ice_servers():
+    try:
+        account_sid = st.secrets["TWILIO_ACCOUNT_SID"]
+        auth_token = st.secrets["TWILIO_AUTH_TOKEN"]
+        client = Client(account_sid, auth_token)
+        token = client.tokens.create()
+        return token.ice_servers
+    except Exception as e:
+        print(f"Twilio credential error warning: {e}")
+        return [{"urls": ["stun:stun.l.google.com:19302"]}]
+
 RTC_CONFIGURATION = RTCConfiguration({
-    "iceServers": [
-        {"urls": ["stun:stun.l.google.com:19302"]},
-        {"urls": ["stun:stun1.l.google.com:19302"]},
-        {"urls": ["stun:stun2.l.google.com:19302"]},
-    ]
+    "iceServers": get_ice_servers()
 })
 
 # --- WORKAROUND FOR STREAMLIT-WEBRTC THREADING BUG ---
